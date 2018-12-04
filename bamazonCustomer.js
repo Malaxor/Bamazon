@@ -1,10 +1,10 @@
-// necessary node modules
-var mysql = require("mysql");
-var inquirer = require("inquirer");
-// this modules allows you to change the font colors
-var colors = require("colors");
-// create a connection to the database
-var connection = mysql.createConnection({
+
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const colors = require("colors");
+const Table = require('cli-table');
+
+const connection = mysql.createConnection({
 
 	host: "localhost",
 	port: 3306,
@@ -12,79 +12,83 @@ var connection = mysql.createConnection({
 	password: "M@laax0r",
 	database: "bamazon_db"
 });
-start()
-//connect to the database; select everything from the products table
-function start() {
 
-	connection.query("SELECT * FROM products", function(err, res) {
+(function startApp() {
+
+	connection.query("SELECT * FROM products", (err, res) => {
 
 		if(err) throw err;
-		console.log("\n===================================================================================================".bold.green);
-		for(var i = 0; i < res.length; i++) {
 
-			console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " || Quantity: " + res[i].stock);
-			console.log("===================================================================================================".bold.green);
-		}	
-			console.log("");
+		const table = new Table({
+
+			head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+			style: {
+				head: ['green'],
+				compact: false,
+				colAligns: ['center']
+			}	
+		});
+		res.forEach(item => {
+
+			table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, item.stock]);
+		});
+		console.log(table.toString());	
+		console.log("");
 			
 			inquirer.prompt([
 			{
-				name: "identifier",
+				name: "id",
 				type: "input",
 				message: "Please type the chosen product's id:",
-				validate: function(value) {
-					// this funciton checks whether the user types in a number(s) or letter(s)
-					// the if statement allows only numbers to be entered
+				validate(value) {
 					if(!isNaN(value)) {
 						return true;
 					}
-						return false;
+					return false;
 				}	
 			},{
 				name: "amount",
 				type: "input",
 				message: "How many would you like to purchase?",
-				validate: function(value) {
-
+				validate(value) {
 					if(!isNaN(value)) {
 						return true;
 					}
-						return false;
+					return false;
 				}
 			}
-		]).then(function(answers) {
+		]).then(purchase => {
 
-			var item = parseInt(answers.amount);
+			const amount = parseInt(purchase.amount);
 			// connect to database to verify if there's enough stock 
-			connection.query("SELECT * FROM products WHERE?", {id: answers.identifier}, function (err, data) {
+			connection.query("SELECT * FROM products WHERE?", {id: purchase.id}, (err, data) => {
 				// display the error message
 				if(err) throw err;
 				// check the stock
-				if(data[0].stock < answers.amount) {
-					// display the result
+				if(data[0].stock < purchase.amount) {
+
 					console.log("=============================================".bold.green);
 					console.log("Sorry, but we don't have that many in stock.".bold.white);
 					console.log("=============================================".bold.green);
 					console.log("The app has closed. Please restart it!".bold.red);
 					console.log("=============================================".bold.green);
-					// terminate the app
 					connection.end();
 				}
 				else {
 					// update the inventory
-					var updateStock = data[0].stock - item;
+					const updateStock = data[0].stock - amount;
 					// calculate total price
-					var totalPrice = data[0].price * item;
+					const totalPrice = data[0].price * amount;
 					// update the prodcuts table in mysql
 					connection.query("UPDATE products SET? WHERE?", 
 					[
 						{
 							stock: updateStock 
 						},{
-							id: answers.identifier
+							id: purchase.id
 						}
 					],
-					function(err,response) {
+					(err, response) => {
 						// display an error, if one
 						if(err) throw err;
 						// display the following...
@@ -100,10 +104,10 @@ function start() {
 								type: "confirm",
 								message: "Would you like to make another purchase?"
 							}
-						]).then(function(answer) {
+						]).then(answer => {
 
-							if(answer.buy === true) {
-								start();
+							if(answer.buy) {
+								startApp();
 							}
 							else {
 								console.log("\n====================================".rainbow);
@@ -117,7 +121,4 @@ function start() {
 			});
 		});
 	});	
-}
-
-
-
+}());

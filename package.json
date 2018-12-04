@@ -1,16 +1,14 @@
 {
-  "name": "bamazon",
+  "name": "Bamazon",
   "version": "1.0.0",
-  "description": "",
-  "main": "bamazonCustomer.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "PC",
-  "license": "ISC",
+  "main": "index.js",
+  "repository": "git@github.com:Malaxor/Bamazon.git",
+  "author": "Malaxor <nogobaduk@gmail.com>",
+  "license": "MIT",
   "dependencies": {
-    "colors": "^1.1.2",
-    "inquirer": "^3.3.0",
-    "mysql": "^2.15.0"
+    "cli-table": "^0.3.1",
+    "colors": "^1.3.2",
+    "inquirer": "^6.2.1",
+    "mysql": "^2.16.0"
   }
 }
