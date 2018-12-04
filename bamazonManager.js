@@ -1,9 +1,10 @@
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const Table = require('cli-table');
 const colors = require("colors");
-// create a connection to the database
+// imported function
+const insertTable = require('./insertTable');
+
 const connection =mysql.createConnection({
 
 	host: "localhost",
@@ -12,14 +13,14 @@ const connection =mysql.createConnection({
 	password: "M@laax0r",
 	database: "bamazon_db"
 });
-// establish connection
-connection.connect(function(err) {
+connection.connect(err => {
 
 	if(err) throw err;
+	start();
 });
 console.log("=============================================".green);
 
-(function start() {
+function start() {
 
 	inquirer.prompt([
 		{
@@ -49,7 +50,7 @@ console.log("=============================================".green);
 			break;
 		}
 	});
-}());
+};
 
 function viewProducts() {
 
@@ -57,22 +58,9 @@ function viewProducts() {
 
 		if(err) throw err;
 
-		const table = new Table({
-
-			head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
-			style: {
-				head: ['green'],
-				compact: false,
-				colAligns: ['center']
-			}	
-		});
-		res.forEach(item => {
-
-			table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, item.stock]);
-		});
-		console.log(`\n${table.toString()}`);
+		insertTable(res, colors.white);
+		start();
 	});
-	start();		
 }
 
 function lowInventory() {
@@ -80,21 +68,7 @@ function lowInventory() {
 	connection.query("SELECT * FROM products WHERE stock < 100", (err, res) => {
 
 		if(err) throw err;
-
-		const table = new Table({
-
-			head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
-			style: {
-				head: ['green'],
-				compact: false,
-				colAligns: ['center']
-			}	
-		});
-		res.forEach(item => {
-
-			table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.red(item.stock)]);
-		});
-		console.log(`\n${table.toString()}`);
+		insertTable(res, colors.red);
 
 		inquirer.prompt([
 			{
@@ -134,27 +108,14 @@ function lowInventory() {
 
 					const addInventory = parseInt(item.stock);
 
-					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, data) => { 
+					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => { 
 
 						if(err) throw err;
 						
 						console.log("\nPrior to replenishing!".bold.white);
-						const table = new Table({
+						insertTable(res, colors.red);
 
-							head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
-							style: {
-								head: ['green'],
-								compact: false,
-								colAligns: ['center']
-							}	
-						});
-						data.forEach(item => {
-				
-							table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.red(item.stock)]);
-						});
-						console.log(`${table.toString()}`);
-
-						const updateInventory = addInventory + data[0].stock;
+						const updateInventory = addInventory + res[0].stock;
 						
 						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory}, {id: item.identifier}], (error, response) => {
 
@@ -163,23 +124,9 @@ function lowInventory() {
 							connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => {
 
 								console.log("\nStock resplenished!".bold.white);
-								const table = new Table({
-
-									head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
-									style: {
-										head: ['green'],
-										compact: false,
-										colAligns: ['center']
-									}	
-								});
-								res.forEach(item => {
-						
-									table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.cyan(item.stock)]);
-								});
-								console.log(`${table.toString()}\n`);
+								insertTable(res, colors.cyan);
 								start();
 							});
-
 						});		
 					});
 				});							
