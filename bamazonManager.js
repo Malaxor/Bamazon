@@ -1,10 +1,10 @@
-// node modules
-var mysql = require("mysql");
-var inquirer = require("inquirer");
-// add fun to the layout
-var colors = require("colors");
+
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const Table = require('cli-table');
+const colors = require("colors");
 // create a connection to the database
-var connection =mysql.createConnection({
+const connection =mysql.createConnection({
 
 	host: "localhost",
 	port: 3306,
@@ -16,24 +16,21 @@ var connection =mysql.createConnection({
 connection.connect(function(err) {
 
 	if(err) throw err;
-	// console.log("connected to database with Id" + connection.threadId);
-	// call the function bellow to start the app
-	start();
 });
 console.log("=============================================".green);
 
-function start() {
+(function start() {
 
 	inquirer.prompt([
 		{
-			name: "home",
+			name: "options",
 			type: "list",
 			message: "What would you like to do?",
 			choices: ["View products for sale", "View low inventory", "Replenish inventory", "Add a new product"]
 		}
-	]).then(function(answer) {
+	]).then(app => {
 
-		switch(answer.home) {
+		switch(app.options) {
 
 			case "View products for sale":
 			viewProducts();
@@ -52,103 +49,134 @@ function start() {
 			break;
 		}
 	});
-}
+}());
 
 function viewProducts() {
 
-	connection.query("SELECT * FROM products", function(err, res) {
+	connection.query("SELECT * FROM products", (err, res) => {
 
 		if(err) throw err;
-		console.log("\n===================================================================================================".bold.green);
-		for(var i = 0; i < res.length; i++) {
 
-			console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " || Quantity: " + res[i].stock);
-			console.log("===================================================================================================".bold.green);
-		}	
-			console.log("");
-		start();	
+		const table = new Table({
+
+			head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+			style: {
+				head: ['green'],
+				compact: false,
+				colAligns: ['center']
+			}	
+		});
+		res.forEach(item => {
+
+			table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, item.stock]);
+		});
+		console.log(`\n${table.toString()}`);
 	});
+	start();		
 }
 
 function lowInventory() {
 
-	connection.query("SELECT * FROM products", function(err, res) {
+	connection.query("SELECT * FROM products WHERE stock < 100", (err, res) => {
 
 		if(err) throw err;
-		console.log("\n===================================================================================================".bold.green);
 
-		for(var i = 0; i < res.length; i++) {
+		const table = new Table({
 
-			if(res[i].stock < 100) {
-
-				console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " ||" + " Quantity: "+ colors.red(res[i].stock));
-				console.log("===================================================================================================".bold.green);
+			head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+			style: {
+				head: ['green'],
+				compact: false,
+				colAligns: ['center']
 			}	
-		}
+		});
+		res.forEach(item => {
+
+			table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.red(item.stock)]);
+		});
+		console.log(`\n${table.toString()}`);
+
 		inquirer.prompt([
 			{
-				name: "resuply",
+				name: "replenish",
 				type: "confirm",
 				message: "\nWould you like to replenish inventory?"
 			}
-		]).then(function(ask) {
+		]).then(query => {
 
-			if(ask.resuply === true) {
+			if(query.replenish) {
 
 				inquirer.prompt([
 				{
 					name: "identifier",
 					type: "prompt",
 					message: "Please type in the item's ID whose stock you want to replenish?",
-					validate: function(value) {
+					validate(value) {
 
 						if(!isNaN(value)) {
 							return true;
 						}
-							return false;
+						return false;
 					}		
 				},{
-					name: "add",
+					name: "stock",
 					type: "prompt",
 					message: "How much inventory do you want to add?",
-					validate: function(value) {
+					validate(value) {
 
 			 			if(!isNaN(value)) {
 			 				return true;
 						 }
-							return false;
+						return false;
 					}
 				}
-				]).then(function(answer) {
+				]).then(item => {
 
-					var addInventory = parseInt(answer.add);
+					const addInventory = parseInt(item.stock);
 
-					connection.query("SELECT * FROM products WHERE?", {id: answer.identifier}, function(err, data) { 
+					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, data) => { 
 
 						if(err) throw err;
-						console.log("\nPrior to replenishing!".bold.white);
-		
-						console.log("===================================================================================================".bold.green);
-						for(var i = 0; i < data.length; i++) {
-
-							console.log("ID: " + data[i].id + " || Product: " + data[i].product + " || Department: " + data[i].department + " || Price: $" + data[i].price + " || Quantity: " + colors.red(data[i].stock));
-							console.log("===================================================================================================".bold.green);
-						}
-						var updateInventory = addInventory + data[0].stock;
 						
-						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory},{id: answer.identifier}], function (error, response) {
+						console.log("\nPrior to replenishing!".bold.white);
+						const table = new Table({
+
+							head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+							style: {
+								head: ['green'],
+								compact: false,
+								colAligns: ['center']
+							}	
+						});
+						data.forEach(item => {
+				
+							table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.red(item.stock)]);
+						});
+						console.log(`${table.toString()}`);
+
+						const updateInventory = addInventory + data[0].stock;
+						
+						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory}, {id: item.identifier}], (error, response) => {
 
 							if(error) throw error;
 
-							connection.query("SELECT * FROM products WHERE?", {id: answer.identifier}, function(err, res) {
+							connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => {
 
 								console.log("\nStock resplenished!".bold.white);
-								console.log("===================================================================================================".bold.green);
-								for(var i = 0; i < res.length; i++) {
+								const table = new Table({
 
-									console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " || Quantity: " + colors.bold.cyan(res[i].stock));
-									console.log("===================================================================================================".bold.green);
-								}
+									head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+									style: {
+										head: ['green'],
+										compact: false,
+										colAligns: ['center']
+									}	
+								});
+								res.forEach(item => {
+						
+									table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, colors.cyan(item.stock)]);
+								});
+								console.log(`${table.toString()}\n`);
 								start();
 							});
 
@@ -157,7 +185,6 @@ function lowInventory() {
 				});							
 			}
 			else {
-
 				console.log("========================================".bold.green);
 				console.log("App will restart!".bold.red);
 				console.log("========================================".bold.green);

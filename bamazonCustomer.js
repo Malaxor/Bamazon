@@ -59,8 +59,6 @@ const connection = mysql.createConnection({
 			}
 		]).then(purchase => {
 
-			const amount = parseInt(purchase.amount);
-			// connect to database to verify if there's enough stock 
 			connection.query("SELECT * FROM products WHERE?", {id: purchase.id}, (err, data) => {
 				// display the error message
 				if(err) throw err;
@@ -76,8 +74,8 @@ const connection = mysql.createConnection({
 				}
 				else {
 					// update the inventory
+					const amount = parseInt(purchase.amount);
 					const updateStock = data[0].stock - amount;
-					// calculate total price
 					const totalPrice = data[0].price * amount;
 					// update the prodcuts table in mysql
 					connection.query("UPDATE products SET? WHERE?", 
