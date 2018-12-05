@@ -1,7 +1,7 @@
 
 const Table = require('cli-table');
 
-module.exports = function (res, changeColor) {
+module.exports = function (res, color) {
 	
 	const table = new Table({
 
@@ -14,7 +14,7 @@ module.exports = function (res, changeColor) {
 	});
 	res.forEach(item => {
 
-		table.push([item.id, item.product, item.department, `$${item.price.toFixed(2)}`, changeColor(item.stock)]);
+		table.push([item.id, item.product, item.department, `$${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, color(item.stock)]);
 	});
 	console.log(`\n${table.toString()}`);
 }

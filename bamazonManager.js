@@ -42,7 +42,7 @@ function start() {
 			break;
 
 			case "Replenish inventory":
-			replenish();
+			replenishInventory();
 			break;
 
 			case "Add a new product":
@@ -57,7 +57,6 @@ function viewProducts() {
 	connection.query("SELECT * FROM products", (err, res) => {
 
 		if(err) throw err;
-
 		insertTable(res, colors.white);
 		start();
 	});
@@ -72,13 +71,13 @@ function lowInventory() {
 
 		inquirer.prompt([
 			{
-				name: "replenish",
+				name: "confirm",
 				type: "confirm",
 				message: "\nWould you like to replenish inventory?"
 			}
-		]).then(query => {
+		]).then(replenish => {
 
-			if(query.replenish) {
+			if(replenish.confirm) {
 
 				inquirer.prompt([
 				{
@@ -90,8 +89,8 @@ function lowInventory() {
 						if(!isNaN(value)) {
 							return true;
 						}
-						return false;
-					}		
+					   return false;
+				   }
 				},{
 					name: "stock",
 					type: "prompt",
@@ -140,84 +139,68 @@ function lowInventory() {
 		});							
     });
 }
+function replenishInventory() {
 
-function replenish() {
-
-	connection.query("SELECT * FROM products", function(err, res) {
+	connection.query("SELECT * FROM products", (err, res) => {
 
 		if(err) throw err;
-		console.log("\n===================================================================================================".bold.green);
+		insertTable(res, colors.white);
 
-		for(var i = 0; i < res.length; i++) {
-
-			console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " ||" + " Quantity: "+ res[i].stock);
-			console.log("===================================================================================================".bold.green);
-				
-		}
 		inquirer.prompt([
 			{
-				name: "resuply",
+				name: "confirm",
 				type: "confirm",
 				message: "\nWould you like to replenish inventory?"
 			}
-		]).then(function(ask) {
+		]).then(replenish => {
 
-			if(ask.resuply === true) {
+			if(replenish.confirm) {
 
 				inquirer.prompt([
 				{
 					name: "identifier",
 					type: "prompt",
 					message: "Please type in the item's ID whose stock you want to replenish?",
-					validate: function(value) {
+					validate(value) {
 
 						if(!isNaN(value)) {
 							return true;
 						}
-							return false;
-					}		
+					   return false;
+				   }
 				},{
-					name: "add",
+					name: "stock",
 					type: "prompt",
 					message: "How much inventory do you want to add?",
-					validate: function(value) {
+					validate(value) {
 
 			 			if(!isNaN(value)) {
 			 				return true;
 						 }
-							return false;
+						return false;
 					}
 				}
-				]).then(function(answer) {
+				]).then(item => {
 
-					var addInventory = parseInt(answer.add);
+					const addInventory = parseInt(item.stock);
 
-					connection.query("SELECT * FROM products WHERE?", {id: answer.identifier}, function(err, data) { 
+					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => { 
 
 						if(err) throw err;
-						console.log("\nPrior to replenishing!".bold.white);
-		
-						console.log("===================================================================================================".bold.green);
-						for(var i = 0; i < data.length; i++) {
-
-							console.log("ID: " + data[i].id + " || Product: " + data[i].product + " || Department: " + data[i].department + " || Price: $" + data[i].price + " || Quantity: " + colors.red(data[i].stock));
-							console.log("===================================================================================================".bold.green);
-						}
-						var updateInventory = addInventory + data[0].stock;
 						
-						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory},{id: answer.identifier}], function (error, response) {
+						console.log("\nPrior to replenishing!".bold.white);
+						insertTable(res, colors.yellow);
+
+						const updateInventory = addInventory + res[0].stock;
+						
+						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory}, {id: item.identifier}], (error, response) => {
 
 							if(error) throw error;
 
-							connection.query("SELECT * FROM products WHERE?", {id: answer.identifier}, function(err, res) {
+							connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => {
 
 								console.log("\nStock resplenished!".bold.white);
-								console.log("===================================================================================================".bold.green);
-								for(var i = 0; i < res.length; i++) {
-
-									console.log("ID: " + res[i].id + " || Product: " + res[i].product + " || Department: " + res[i].department + " || Price: $" + res[i].price + " || Quantity: " + colors.bold.cyan(res[i].stock));
-									console.log("===================================================================================================".bold.green);
-								}
+								insertTable(res, colors.yellow);
 								start();
 							});
 						});		
@@ -225,14 +208,13 @@ function replenish() {
 				});							
 			}
 			else {
-
 				console.log("========================================".bold.green);
 				console.log("App will restart!".bold.red);
 				console.log("========================================".bold.green);
 				start();
 			}	
 		});							
-	});	
+    });
 }
 
 function addProduct() {
@@ -250,30 +232,37 @@ function addProduct() {
             name: "price",
             type: "input",
             message: "Type the product's price (without currency symbols)",
-            validate: function(value) {
+            validate(value) {
 
             	if(!isNaN(value)) {
             		return true;
             	}
-            		return false;
+            	return false;
             }		
         }, {
             name: "quantity",
             type: "input",
-            message: "Type the amount you want to add to the inventory"
+			message: "Type the amount you want to add to the inventory",
+			validate(value) {
+
+            	if(!isNaN(value)) {
+            		return true;
+            	}
+            	return false;
+            }	
         }
-    ]).then(function(answers) {
+    ]).then(newItem => {
 
-        var productName = answers.product;
-        var departmentName = answers.department;
-        var Price = answers.price;
-        var stockQuantity = answers.quantity;
+        const product = newItem.product;
+        const department = newItem.department;
+        const price = newItem.price;
+        const stock = newItem.quantity;
 
-        connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [productName, departmentName, Price, stockQuantity], function(err, data) {
+        connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, stock], (err, data) => {
             
             if (err) throw err;
 
-            console.log('\n\nProduct: ' + productName + ' added successfully!\n\n');
+            console.log(`\n\nProduct: ${product} added successfully!\n\n`);
             viewProducts();
         });
     });    
