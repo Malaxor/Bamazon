@@ -29,7 +29,6 @@ function start() {
 	]).then(app => {
 
 		switch(app.options) {
-
 			case "View products for sale":
 			viewProducts();
 			break;
@@ -57,7 +56,6 @@ function viewProducts() {
 		start();
 	});
 }
-
 function lowInventory() {
 
 	connection.query("SELECT * FROM products WHERE stock < 100", (err, res) => {
@@ -245,15 +243,10 @@ function addProduct() {
       }
     ]).then(newItem => {
 
-      const product = newItem.product;
-      const department = newItem.department;
-      const price = newItem.price;
-      const stock = newItem.quantity;
-
+      const { product, department, price, stock } = newItem;
       connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, stock], (err, data) => {
             
          if (err) throw err;
-
          console.log(`\n\nProduct: ${product} added successfully!\n\n`);
          viewProducts();
       });
