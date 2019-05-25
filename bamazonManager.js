@@ -1,20 +1,17 @@
-
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const colors = require("colors");
-// imported function
-const insertTable = require('./insertTable');
+const { host, port, user, password, database } = require('./config/keys');
+const insertTable = require('./utils/insertTable');
 
-const connection =mysql.createConnection({
-
-	host: "localhost",
-	port: 3306,
-	user: "root",
-	password: "M@laax0r",
-	database: "bamazon_db"
+const connection = mysql.createConnection({
+	host,
+	port,
+	user,
+	password,
+	database
 });
 connection.connect(err => {
-
 	if(err) throw err;
 	start();
 });
@@ -51,7 +48,6 @@ function start() {
 		}
 	});
 };
-
 function viewProducts() {
 
 	connection.query("SELECT * FROM products", (err, res) => {
@@ -85,7 +81,6 @@ function lowInventory() {
 					type: "prompt",
 					message: "Please type in the item's ID whose stock you want to replenish?",
 					validate(value) {
-
 						if(!isNaN(value)) {
 							return true;
 						}
@@ -107,14 +102,14 @@ function lowInventory() {
 
 					const addInventory = parseInt(item.stock);
 
-					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => { 
+					connection.query("SELECT * FROM products WHERE?", { id: item.identifier }, (err, res) => { 
 
 						if(err) throw err;
-						
+			
 						console.log("\nPrior to replenishing!".bold.white);
 						insertTable(res, colors.red);
 
-						const updateInventory = addInventory + res[0].stock;
+						const updateInventory = addInventory + res[0].stocks
 						
 						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory}, {id: item.identifier}], (error, response) => {
 
@@ -216,54 +211,51 @@ function replenishInventory() {
 		});							
     });
 }
-
 function addProduct() {
 
 	inquirer.prompt([
 		{
-            name: "product",
-            type: "input",
-            message: "Type the product's name"
-        }, {
-            name: "department",
-            type: "input",
-            message: "Type the product's department"
-        }, {
-            name: "price",
-            type: "input",
-            message: "Type the product's price (without currency symbols)",
-            validate(value) {
-
-            	if(!isNaN(value)) {
-            		return true;
-            	}
-            	return false;
-            }		
-        }, {
-            name: "quantity",
-            type: "input",
+         name: "product",
+         type: "input",
+         message: "Type the product's name"
+      }, {
+         name: "department",
+         type: "input",
+         message: "Type the product's department"
+      }, {
+         name: "price",
+         type: "input",
+         message: "Type the product's price (without currency symbols)",
+         validate(value) {
+            if(!isNaN(value)) {
+            	return true;
+            }
+            return false;
+         }		
+      }, {
+         name: "quantity",
+         type: "input",
 			message: "Type the amount you want to add to the inventory",
 			validate(value) {
-
-            	if(!isNaN(value)) {
-            		return true;
-            	}
-            	return false;
-            }	
-        }
+            if(!isNaN(value)) {
+            	return true;
+            }
+            return false;
+         }	
+      }
     ]).then(newItem => {
 
-        const product = newItem.product;
-        const department = newItem.department;
-        const price = newItem.price;
-        const stock = newItem.quantity;
+      const product = newItem.product;
+      const department = newItem.department;
+      const price = newItem.price;
+      const stock = newItem.quantity;
 
-        connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, stock], (err, data) => {
+      connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, stock], (err, data) => {
             
-            if (err) throw err;
+         if (err) throw err;
 
-            console.log(`\n\nProduct: ${product} added successfully!\n\n`);
-            viewProducts();
-        });
-    });    
+         console.log(`\n\nProduct: ${product} added successfully!\n\n`);
+         viewProducts();
+      });
+   });    
 } 
