@@ -30,19 +30,19 @@ function start() {
 
 		switch(app.options) {
 			case "View products for sale":
-			viewProducts();
+				viewProducts();
 			break;
 
 			case "View low inventory":
-			lowInventory();
+				lowInventory();
 			break;
 
 			case "Replenish inventory":
-			replenishInventory();
+				replenishInventory();
 			break;
 
 			case "Add a new product":
-			addProduct();
+				addProduct();
 			break;
 		}
 	});
@@ -69,13 +69,13 @@ function lowInventory() {
 				type: "confirm",
 				message: "\nWould you like to replenish inventory?"
 			}
-		]).then(replenish => {
+		]).then(({ confirm }) => {
 
-			if(replenish.confirm) {
+			if(confirm) {
 
 				inquirer.prompt([
 				{
-					name: "identifier",
+					name: "id",
 					type: "prompt",
 					message: "Please type in the item's ID whose stock you want to replenish?",
 					validate(value) {
@@ -89,31 +89,28 @@ function lowInventory() {
 					type: "prompt",
 					message: "How much inventory do you want to add?",
 					validate(value) {
-
 			 			if(!isNaN(value)) {
 			 				return true;
 						 }
 						return false;
 					}
 				}
-				]).then(item => {
+				]).then(({ id, stock }) => {
 
-					const addInventory = parseInt(item.stock);
-
-					connection.query("SELECT * FROM products WHERE?", { id: item.identifier }, (err, res) => { 
+					connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => { 
 
 						if(err) throw err;
 			
 						console.log("\nPrior to replenishing!".bold.white);
 						insertTable(res, colors.red);
 
-						const updateInventory = addInventory + res[0].stocks
+						stock = parseInt(stock)+ res[0].stock;
 						
-						connection.query("UPDATE products SET? WHERE?", [{stock: updateInventory}, {id: item.identifier}], (error, response) => {
+						connection.query("UPDATE products SET? WHERE?", [{ stock }, { id }], (err, res) => {
 
-							if(error) throw error;
+							if(err) throw err;
 
-							connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => {
+							connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => {
 
 								console.log("\nStock resplenished!".bold.white);
 								insertTable(res, colors.cyan);
@@ -155,7 +152,6 @@ function replenishInventory() {
 					type: "prompt",
 					message: "Please type in the item's ID whose stock you want to replenish?",
 					validate(value) {
-
 						if(!isNaN(value)) {
 							return true;
 						}
@@ -166,7 +162,6 @@ function replenishInventory() {
 					type: "prompt",
 					message: "How much inventory do you want to add?",
 					validate(value) {
-
 			 			if(!isNaN(value)) {
 			 				return true;
 						 }
@@ -177,7 +172,7 @@ function replenishInventory() {
 
 					const addInventory = parseInt(item.stock);
 
-					connection.query("SELECT * FROM products WHERE?", {id: item.identifier}, (err, res) => { 
+					connection.query("SELECT * FROM products WHERE?",  {id: item.identifier }, (err, res) => { 
 
 						if(err) throw err;
 						
@@ -243,8 +238,8 @@ function addProduct() {
       }
     ]).then(newItem => {
 
-      const { product, department, price, stock } = newItem;
-      connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, stock], (err, data) => {
+      const { product, department, price, quantity } = newItem;
+      connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, quantity], (err, data) => {
             
          if (err) throw err;
          console.log(`\n\nProduct: ${product} added successfully!\n\n`);

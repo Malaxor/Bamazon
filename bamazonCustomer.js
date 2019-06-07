@@ -41,7 +41,7 @@ const connection = mysql.createConnection({
 			}
 		}
 		]).then(purchase => {
-			connection.query("SELECT * FROM products WHERE?", {id: purchase.id}, (err, data) => {
+			connection.query("SELECT * FROM products WHERE?", { id: purchase.id }, (err, data) => {
 
 				if(err) throw err;
 				if(data[0].stock < purchase.amount) {

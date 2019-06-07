@@ -9,8 +9,8 @@ module.exports = (res, color) => {
 			colAligns: ['center']
 		}	
 	});
-	res.forEach(item => {
-		table.push([item.id, item.product, item.department, `$${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, color(item.stock)]);
+	res.forEach(({ id, product, department, price, stock }) => {
+		table.push([id, product, department, `$${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, color(stock)]);
 	});
 	console.log(`\n${table.toString()}`);
 }
