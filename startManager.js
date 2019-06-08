@@ -1,11 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const { host, port, user, password, database } = require('./config/keys');
-
-const viewProducts = require('./BamazonManager/viewProducts');
-const lowInventory = require('./BamazonManager/lowInventory');
-const replenishInventory = require('./BamazonManager/replenishInventory');
-const addProduct = require('./BamazonManager/addProduct');
+const { addProduct, endConnection, lowInventory, replenishInventory, viewProducts } = require('./BamazonManager');
 
 const connection = mysql.createConnection({
 	host,
@@ -21,13 +17,13 @@ connection.connect(err => {
 console.log("=============================================".green);
 
 async function start() {
-
+	
 	const { options } = await inquirer.prompt([
 		{
 			name: "options",
 			type: "list",
 			message: "What would you like to do?",
-			choices: ["View products for sale", "View low inventory", "Replenish inventory", "Add a new product"]
+			choices: ["View products for sale", "View low inventory", "Replenish inventory", "Add a new product", "Exit"]
 		}
 	]);
 	switch(options) {
@@ -46,6 +42,10 @@ async function start() {
 
 		case "Add a new product":
 			addProduct(connection, start);
+		break;
+
+		case "Exit":
+			endConnection(connection);
 		break;
 	}
 }

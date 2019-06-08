@@ -2,7 +2,7 @@ const inquirer = require('inquirer');
 const viewProducts = require('./viewProducts');
 
 module.exports = async (connection, start) => {
-
+   
 	const { product, department, price, quantity } = await inquirer.prompt([
 		{
          name: "product",

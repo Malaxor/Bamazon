@@ -16,7 +16,6 @@ module.exports = (connection, start) => {
       });
 
       if(confirm) {
-
          const { id, stock } = await inquirer.prompt([{
             name: "id",
             type: "prompt",
