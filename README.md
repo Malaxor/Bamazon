@@ -5,6 +5,7 @@ This CLI back-end app is an Amazon-like storefront utilizing Node.js and MySQL d
 Technologies used: Node.js, MySQL.
 
 It presents two views:
+
 The customer view that will take in orders from customers and deplete stock from the store's inventory. It notifies the customer of either insufficient stock levels or a order total based on quantity purchased and item price.
 
 The manager view allows the manager to view all stock, view low quantity stock, add product to current stock levels, and add new products to the database.
