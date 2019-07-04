@@ -10,7 +10,7 @@ module.exports = (res, color) => {
 		}	
 	});
 	res.forEach(({ id, product, department, price, stock }) => {
-		table.push([id, product, department, `$${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, color(stock)]);
+		table.push([id, product, department, `$${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, color(stock.toLocaleString())]);
 	});
 	console.log(`${table.toString()}`);
 }

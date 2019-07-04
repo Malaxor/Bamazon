@@ -16,7 +16,7 @@ module.exports = (connection, start) => {
       });
 
       if(confirm) {
-         const { id, stock } = await inquirer.prompt([{
+         const { id, addToInventory } = await inquirer.prompt([{
             name: "id",
             type: "prompt",
             message: "Please type in the item's ID whose stock you want to replenish?",
@@ -27,7 +27,7 @@ module.exports = (connection, start) => {
                return false;
             }
          },{
-            name: "stock",
+            name: "addToInventory",
             type: "prompt",
             message: "How much inventory do you want to add?",
             validate(value) {
@@ -43,7 +43,7 @@ module.exports = (connection, start) => {
             console.log("\nPrior to replenishing!".bold.white);
             insertTable(res, colors.red);
 
-            const newStock = parseInt(stock)+ res[0].stock;
+            const newStock = parseInt(addToInventory) + res[0].stock;
             
             connection.query("UPDATE products SET? WHERE?", [{ stock: newStock }, { id }], (err, res) => {
 

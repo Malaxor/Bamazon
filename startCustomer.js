@@ -48,9 +48,9 @@ const connection = mysql.createConnection({
 					console.log("=============================================".bold.green);
 					console.log("Sorry, but we don't have that many in stock.".bold.white);
 					console.log("=============================================".bold.green);
-					console.log("The app has closed. Please restart it!".bold.red);
+					console.log("App has restarted!".bold.red);
 					console.log("=============================================".bold.green);
-					connection.end();
+					startApp();
 				}
 				else {
 					// update the inventory
@@ -59,12 +59,11 @@ const connection = mysql.createConnection({
 					const totalPrice = data[0].price * amount;
 
 					connection.query("UPDATE products SET? WHERE?", [{ stock: updateStock }, { id: purchase.id }], (err, response) => {
-
 						if(err) throw err;
 						console.log("=============================================".bold.green);
 						console.log("Purchase successfully made!");
 						console.log("=============================================".bold.green);
-						console.log("Your total cost is $" + totalPrice.toFixed(2).toLocaleString());
+						console.log("Your total cost is $" + totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 }));
 						console.log("=============================================".bold.green);
 						// ask the user if he/she would like to make another purchase
 						inquirer.prompt([

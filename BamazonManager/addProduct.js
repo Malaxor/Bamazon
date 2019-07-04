@@ -33,8 +33,8 @@ module.exports = async (connection, start) => {
             return false;
          }	
       }
-    ]);
-   connection.query("INSERT INTO products (product, department, price, stock) VALUES(?,?,?,?)", [product, department, price, quantity], (err, data) => {
+   ]);
+   connection.query("INSERT INTO products (product, department, price, stock) VALUES(?, ?, ?, ?)", [product, department, price, quantity], (err, data) => {
          
       if (err) throw err;
       console.log(`\n\nProduct: ${product} added successfully!\n\n`);
