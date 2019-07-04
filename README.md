@@ -1,6 +1,4 @@
-Bamazon
-
-This CLI back-end app is an Amazon-like storefront utilizing Node.js and MySQL database. 
+This Node.js app is an Amazon-like storefront utilizing Node.js and MySQL database. 
 
 Technologies used: Node.js, MySQL.
 
