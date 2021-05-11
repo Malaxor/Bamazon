@@ -3,9 +3,7 @@ const inquirer = require('inquirer');
 const insertTable = require('../utils/insertTable');
 
 module.exports = (connection, start) => {
-
 	connection.query("SELECT * FROM products", async (err, res) => {
-
 		if(err) throw err;
 		insertTable(res, colors.white);
 
@@ -31,8 +29,7 @@ module.exports = (connection, start) => {
             return false;
          }
       }]);
-      connection.query("SELECT * FROM products WHERE?",  { id }, (err, res) => { 
-
+      connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => { 
          if(err) throw err;
          console.log("\nPrior to replenishing!".bold.white);
          insertTable(res, colors.yellow);
@@ -40,10 +37,8 @@ module.exports = (connection, start) => {
          const newStock = parseInt(stock) + res[0].stock;
          
          connection.query("UPDATE products SET? WHERE?", [{ stock: newStock }, { id }], (err, res) => {
-
             if(err) throw err;
             connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => {
-
                console.log("\nStock resplenished!".bold.white);
                insertTable(res, colors.cyan);
                start();

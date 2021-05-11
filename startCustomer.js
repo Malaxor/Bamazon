@@ -12,7 +12,6 @@ const connection = mysql.createConnection({
 	database
 });
 (function startApp() {
-
 	connection.query("SELECT * FROM products", (err, res) => {
 		if(err) throw err;
 		insertTable(res, colors.white);

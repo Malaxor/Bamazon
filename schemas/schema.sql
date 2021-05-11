@@ -7,8 +7,9 @@ CREATE TABLE products (
 	product VARCHAR(100) NOT NULL,
 	department VARCHAR(100) NOT NULL,
 	price DECIMAL(10,2) NOT NULL,
-	stock INTEGER(10) NOT NULL,
+	stock INTEGER(10) NOT NULL
 );
+
 INSERT INTO products(product, department, price, stock)
 VALUES("samsung galaxy S8", "electronics", 450, 800),("mattress", "home & kitchen", 900, 100),
 ("battlefield 1", "pc & video games", 75, 66),("socks", "clothing", 2.50, 1500),("rake", "garden & outdoors", 18, 150),

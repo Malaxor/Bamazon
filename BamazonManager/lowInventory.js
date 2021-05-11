@@ -3,29 +3,22 @@ const inquirer = require('inquirer');
 const insertTable = require('../utils/insertTable');
 
 module.exports = (connection, start) => {
-
 	connection.query("SELECT * FROM products WHERE stock < 100", async (err, res) => {
-      
       if(err) throw err;
 		insertTable(res, colors.red);
-
       const { confirm } = await inquirer.prompt({ 
          name: "confirm", 
          type: "confirm", 
-         message: "\nWould you like to replenish inventory?" 
+         message: "Would you like to replenish inventory?" 
       });
+      const productsIDs = res.map(item => item.id);
 
       if(confirm) {
          const { id, addToInventory } = await inquirer.prompt([{
             name: "id",
-            type: "prompt",
-            message: "Please type in the item's ID whose stock you want to replenish?",
-            validate(value) {
-               if(!isNaN(value)) {
-                  return true;
-               }
-               return false;
-            }
+            type: "list",
+            message: "Please select the item's ID whose stock you want to replenish?",
+            choices: productsIDs
          },{
             name: "addToInventory",
             type: "prompt",
@@ -33,24 +26,19 @@ module.exports = (connection, start) => {
             validate(value) {
                if(!isNaN(value)) {
                   return true;
-                  }
+               }
                return false;
             }
          }]);
          connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => { 
-
             if(err) throw err;
             console.log("\nPrior to replenishing!".bold.white);
             insertTable(res, colors.red);
-
-            const newStock = parseInt(addToInventory) + res[0].stock;
             
+            const newStock = parseInt(addToInventory) + res[0].stock;
             connection.query("UPDATE products SET? WHERE?", [{ stock: newStock }, { id }], (err, res) => {
-
                if(err) throw err;
-
                connection.query("SELECT * FROM products WHERE?", { id }, (err, res) => {
-
                   console.log("\nStock resplenished!".bold.white);
                   insertTable(res, colors.cyan);
                   start();

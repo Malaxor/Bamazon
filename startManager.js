@@ -47,7 +47,7 @@ async function start() {
 		case "Add a new product":
 			addProduct(connection, start);
 		break;
-
+		
 		case "Exit":
 			endConnection(connection);
 		break;

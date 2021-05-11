@@ -2,7 +2,6 @@ const inquirer = require('inquirer');
 const viewProducts = require('./viewProducts');
 
 module.exports = async (connection, start) => {
-   
 	const { product, department, price, quantity } = await inquirer.prompt([
 		{
          name: "product",
@@ -34,8 +33,7 @@ module.exports = async (connection, start) => {
          }	
       }
    ]);
-   connection.query("INSERT INTO products (product, department, price, stock) VALUES(?, ?, ?, ?)", [product, department, price, quantity], (err, data) => {
-         
+   connection.query("INSERT INTO products(product, department, price, stock) VALUES(?, ?, ?, ?)", [product, department, price, quantity], (err, data) => {
       if (err) throw err;
       console.log(`\n\nProduct: ${product} added successfully!\n\n`);
       viewProducts(connection, start);
