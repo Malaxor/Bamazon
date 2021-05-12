@@ -24,7 +24,7 @@ module.exports = async (connection, start) => {
       }, {
          name: "quantity",
          type: "input",
-			message: "Type the amount you want to add to the inventory",
+			message: "Type the amount you want to add to inventory",
 			validate(value) {
             if(!isNaN(value)) {
             	return true;
@@ -38,4 +38,4 @@ module.exports = async (connection, start) => {
       console.log(`\n\nProduct: ${product} added successfully!\n\n`);
       viewProducts(connection, start);
    });
-} 
+}

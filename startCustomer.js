@@ -2,7 +2,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const colors = require("colors");
 const { host, port, user, password, database } = require('./config/keys');
-const insertTable = require('./utils/insertTable');
+const { insertTable, checkID } = require('./utils');
 
 const connection = mysql.createConnection({
 	host,
@@ -11,6 +11,7 @@ const connection = mysql.createConnection({
 	password,
 	database
 });
+
 (function startApp() {
 	connection.query("SELECT * FROM products", (err, res) => {
 		if(err) throw err;
@@ -23,10 +24,7 @@ const connection = mysql.createConnection({
 			type: "input",
 			message: "Please type the chosen product's id:",
 			validate(value) {
-				if(!isNaN(value)) {
-					return true;
-				}
-				return false;
+				return checkID(res, value);
 			}	
 		},{
 			name: "amount",

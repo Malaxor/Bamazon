@@ -11,14 +11,13 @@ module.exports = (connection, start) => {
          type: "confirm", 
          message: "Would you like to replenish inventory?" 
       });
-      const productsIDs = res.map(item => item.id);
 
       if(confirm) {
          const { id, addToInventory } = await inquirer.prompt([{
             name: "id",
             type: "list",
             message: "Please select the item's ID whose stock you want to replenish?",
-            choices: productsIDs
+            choices: res.map(item => item.id)
          },{
             name: "addToInventory",
             type: "prompt",

@@ -1,6 +1,6 @@
 const colors = require("colors");
 const inquirer = require('inquirer');
-const insertTable = require('../utils/insertTable');
+const { checkID, insertTable} = require('../utils');
 
 module.exports = (connection, start) => {
 	connection.query("SELECT * FROM products", async (err, res) => {
@@ -13,10 +13,7 @@ module.exports = (connection, start) => {
          type: "prompt",
          message: "Please type in the item's ID whose stock you want to replenish?",
          validate(value) {
-            if(!isNaN(value)) {
-               return true;
-            }
-            return false;
+            return checkID(res, value);
          }
       }, {
          name: "stock",
